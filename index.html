@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Space Beavers in Paradise</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #1b2a4a 0%, #2f8f7a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    padding: 20px;
+  }
+  .app {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 28px 24px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; display:flex; align-items:center; gap:8px;}
+  .subtitle { font-size: 0.85rem; opacity: 0.8; margin-bottom: 20px; }
+  .card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  button {
+    background: #ff9f4a;
+    color: #1b2a4a;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.1s;
+  }
+  button:active { transform: scale(0.97); }
+  button.secondary {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+  }
+  button.damit {
+    background: #e0664a;
+    color: #fff;
+  }
+  textarea, input[type=text] {
+    width: 100%;
+    border-radius: 12px;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    resize: none;
+    min-height: 90px;
+    font-family: inherit;
+  }
+  .choice-row { display: flex; gap: 10px; margin-top: 10px; }
+  .choice-row button { flex: 1; }
+  .hidden { display: none; }
+  .answer-box {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 10px;
+  }
+  .answer-box .name { font-weight: 700; margin-bottom: 4px; }
+  .status { font-size: 0.9rem; opacity: 0.85; margin-top: 8px; text-align: center; }
+  .top-row { display: flex; justify-content: space-between; align-items: center; }
+  .icon-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .modal-overlay {
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  .modal {
+    background: #2f8f7a;
+    border-radius: 20px;
+    padding: 24px;
+    max-width: 340px;
+    text-align: center;
+  }
+  .beaver { font-size: 3rem; }
+  small.footer { display:block; text-align:center; opacity:0.6; margin-top:16px; font-size:0.75rem;}
+</style>
+</head>
+<body>
+<div class="app" id="app">Laden... 🦫</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://kbefgjtgwxjifporbtpz.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiZWZnanRnd3hqaWZwb3JidHB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQwMjcsImV4cCI6MjEwNTE0MDAyN30.Y21u-9QJtzFyW_a_xQAF2rgwdeUMRkPQJQI4o6ijohc";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const QUESTIONS = [
+  "Hoe voelde vandaag voor jou?",
+  "Wat vond je fijn aan de ander deze dag/week?",
+  "Wat zit je nog dwars? (mag ook 'niets' zijn)",
+  "Wat heb je nodig van de ander, deze week?"
+];
+
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function getUser() {
+  return localStorage.getItem('sbip_user');
+}
+
+function setUser(name) {
+  localStorage.setItem('sbip_user', name);
+}
+
+function getPartner(user) {
+  return user === 'Kim' ? 'Selwyn' : 'Kim';
+}
+
+const app = document.getElementById('app');
+
+async function render() {
+  const user = getUser();
+  if (!user) {
+    renderUserSelect();
+    return;
+  }
+  await renderDaily(user);
+}
+
+function renderUserSelect() {
+  app.innerHTML = `
+    <h1>🦫 Space Beavers <br>in Paradise</h1>
+    <p class="subtitle">Wie ben jij?</p>
+    <div class="card">
+      <div class="choice-row">
+        <button onclick="chooseUser('Kim')">Kim</button>
+        <button onclick="chooseUser('Selwyn')">Selwyn</button>
+      </div>
+    </div>
+    <small class="footer">Jullie eigen rustige plek om te praten 🌊</small>
+  `;
+}
+
+function chooseUser(name) {
+  setUser(name);
+  render();
+}
+
+async function renderDaily(user) {
+  const date = todayStr();
+  const partner = getPartner(user);
+
+  app.innerHTML = `
+    <div class="top-row">
+      <h1>🦫 Space Beavers</h1>
+      <button class="icon-btn" onclick="switchUser()" title="Wissel gebruiker">↺</button>
+    </div>
+    <p class="subtitle">Hoi ${user}! Vandaag: ${date}</p>
+    <div id="content" class="card">Laden...</div>
+    <button class="damit" onclick="showDamIt()">🌊 Dam it (even stomen)</button>
+    <button class="secondary" onclick="showHelp()">🆘 Help, ik loop vast</button>
+    <button class="secondary" onclick="showCompliment()">💛 Schrijf een compliment</button>
+    <small class="footer">Space Beavers in Paradise — rustig, apart, samen</small>
+  `;
+
+  const { data: mine } = await supabase
+    .from('entries')
+    .select('*')
+    .eq('user_name', user)
+    .eq('entry_date', date)
+    .eq('entry_type', 'daily')
+    .maybeSingle();
+
+  const content = document.getElementById('content');
+
+  if (!mine) {
+    const q = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
+    content.innerHTML = `
+      <p style="margin-bottom:10px; font-weight:600;">${q}</p>
+      <textarea id="answerInput" placeholder="Typ hier... (2 minuten is genoeg)"></textarea>
+      <button onclick="submitAnswer('${q.replace(/'/g, "\\'")}')">Versturen</button>
+      <p class="status">Eén keer missen mag. Geen oordeel. 🦫</p>
+    `;
+  } else {
+    const { data: theirs } = await supabase
+      .from('entries')
+      .select('*')
+      .eq('user_name', partner)
+      .eq('entry_date', date)
+      .eq('entry_type', 'daily')
+      .maybeSingle();
+
+    let html = `<div class="answer-box"><div class="name">Jij schreef:</div>${mine.answer}</div>`;
+    if (theirs) {
+      html += `<div class="answer-box"><div class="name">${partner} schreef:</div>${theirs.answer}</div>`;
+    } else {
+      html += `<p class="status">Wachten tot ${partner} ook heeft ingevuld... 🌊</p>`;
+    }
+    content.innerHTML = html;
+  }
+}
+
+async function submitAnswer(question) {
+  const user = getUser();
+  const val = document.getElementById('answerInput').value.trim();
+  if (!val) return;
+  await supabase.from('entries').insert({
+    user_name: user,
+    entry_date: todayStr(),
+    entry_type: 'daily',
+    question: question,
+    answer: val
+  });
+  render();
+}
+
+function switchUser() {
+  localStorage.removeItem('sbip_user');
+  render();
+}
+
+function showDamIt() {
+  showModal(`
+    <div class="beaver">🦫🌊</div>
+    <h2>Dam it.</h2>
+    <p style="margin:12px 0;">Hup, naar de dam. Even stomen.<br>Adem 4 tellen in, 4 tellen uit. Drie keer.</p>
+    <button onclick="closeModal()">Klaar, ik ga verder</button>
+  `);
+}
+
+function showHelp() {
+  showModal(`
+    <h2>🆘 Even vastlopen mag</h2>
+    <p style="margin:12px 0; text-align:left;">
+    1. Wat is de eerste emotie die je voelt?<br><br>
+    2. Waar in je lijf voel je dat?<br><br>
+    3. Wat heb je nu nodig?
+    </p>
+    <button onclick="closeModal()">Terug naar de app</button>
+  `);
+}
+
+async function showCompliment() {
+  showModal(`
+    <h2>💛 Compliment</h2>
+    <p style="margin:8px 0;">Wat vind je leuk of waardeer je aan de ander?</p>
+    <textarea id="complimentInput" placeholder="Schrijf hier..."></textarea>
+    <button onclick="submitCompliment()">Versturen</button>
+    <button class="secondary" onclick="closeModal()">Annuleren</button>
+  `);
+}
+
+async function submitCompliment() {
+  const user = getUser();
+  const val = document.getElementById('complimentInput').value.trim();
+  if (!val) return;
+  await supabase.from('entries').insert({
+    user_name: user,
+    entry_date: todayStr(),
+    entry_type: 'compliment',
+    question: 'compliment',
+    answer: val
+  });
+  closeModal();
+  alert('Verstuurd! De ander ziet dit morgen. 💛');
+}
+
+function showModal(innerHtml) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modalOverlay';
+  overlay.innerHTML = `<div class="modal">${innerHtml}</div>`;
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  const el = document.getElementById('modalOverlay');
+  if (el) el.remove();
+}
+
+render();
+</script>
+</body>
+</html>
