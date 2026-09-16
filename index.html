@@ -105,7 +105,7 @@
 </style>
 </head>
 <body>
-<div class="app" id="app">Laden... 🦫</div>
+<div class="app" id="app">Laden... &#129451;</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -149,7 +149,7 @@ async function render() {
 
 function renderUserSelect() {
   app.innerHTML = `
-    <h1>🦫 Space Beavers <br>in Paradise</h1>
+    <h1>&#129451; Space Beavers <br>in Paradise</h1>
     <p class="subtitle">Wie ben jij?</p>
     <div class="card">
       <div class="choice-row">
@@ -157,7 +157,7 @@ function renderUserSelect() {
         <button onclick="chooseUser('Selwyn')">Selwyn</button>
       </div>
     </div>
-    <small class="footer">Jullie eigen rustige plek om te praten 🌊</small>
+    <small class="footer">Jullie eigen rustige plek om te praten &#127754;</small>
   `;
 }
 
@@ -172,15 +172,15 @@ async function renderDaily(user) {
 
   app.innerHTML = `
     <div class="top-row">
-      <h1>🦫 Space Beavers</h1>
-      <button class="icon-btn" onclick="switchUser()" title="Wissel gebruiker">↺</button>
+      <h1>&#129451; Space Beavers</h1>
+      <button class="icon-btn" onclick="switchUser()" title="Wissel gebruiker">&#8634;</button>
     </div>
     <p class="subtitle">Hoi ${user}! Vandaag: ${date}</p>
     <div id="content" class="card">Laden...</div>
-    <button class="damit" onclick="showDamIt()">🌊 Dam it (even stomen)</button>
-    <button class="secondary" onclick="showHelp()">🆘 Help, ik loop vast</button>
-    <button class="secondary" onclick="showCompliment()">💛 Schrijf een compliment</button>
-    <small class="footer">Space Beavers in Paradise — rustig, apart, samen</small>
+    <button class="damit" onclick="showDamIt()">&#127754; Dam it (even stomen)</button>
+    <button class="secondary" onclick="showHelp()">&#127384; Help, ik loop vast</button>
+    <button class="secondary" onclick="showCompliment()">&#128155; Schrijf een compliment</button>
+    <small class="footer">Space Beavers in Paradise &mdash; rustig, apart, samen</small>
   `;
 
   const { data: mine } = await supabase
@@ -199,7 +199,7 @@ async function renderDaily(user) {
       <p style="margin-bottom:10px; font-weight:600;">${q}</p>
       <textarea id="answerInput" placeholder="Typ hier... (2 minuten is genoeg)"></textarea>
       <button onclick="submitAnswer('${q.replace(/'/g, "\\'")}')">Versturen</button>
-      <p class="status">Eén keer missen mag. Geen oordeel. 🦫</p>
+      <p class="status">E&eacute;n keer missen mag. Geen oordeel. &#129451;</p>
     `;
   } else {
     const { data: theirs } = await supabase
@@ -214,7 +214,7 @@ async function renderDaily(user) {
     if (theirs) {
       html += `<div class="answer-box"><div class="name">${partner} schreef:</div>${theirs.answer}</div>`;
     } else {
-      html += `<p class="status">Wachten tot ${partner} ook heeft ingevuld... 🌊</p>`;
+      html += `<p class="status">Wachten tot ${partner} ook heeft ingevuld... &#127754;</p>`;
     }
     content.innerHTML = html;
   }
@@ -241,7 +241,7 @@ function switchUser() {
 
 function showDamIt() {
   showModal(`
-    <div class="beaver">🦫🌊</div>
+    <div class="beaver">&#129451;&#127754;</div>
     <h2>Dam it.</h2>
     <p style="margin:12px 0;">Hup, naar de dam. Even stomen.<br>Adem 4 tellen in, 4 tellen uit. Drie keer.</p>
     <button onclick="closeModal()">Klaar, ik ga verder</button>
@@ -250,7 +250,7 @@ function showDamIt() {
 
 function showHelp() {
   showModal(`
-    <h2>🆘 Even vastlopen mag</h2>
+    <h2>&#127384; Even vastlopen mag</h2>
     <p style="margin:12px 0; text-align:left;">
     1. Wat is de eerste emotie die je voelt?<br><br>
     2. Waar in je lijf voel je dat?<br><br>
@@ -262,7 +262,7 @@ function showHelp() {
 
 async function showCompliment() {
   showModal(`
-    <h2>💛 Compliment</h2>
+    <h2>&#128155; Compliment</h2>
     <p style="margin:8px 0;">Wat vind je leuk of waardeer je aan de ander?</p>
     <textarea id="complimentInput" placeholder="Schrijf hier..."></textarea>
     <button onclick="submitCompliment()">Versturen</button>
@@ -282,7 +282,7 @@ async function submitCompliment() {
     answer: val
   });
   closeModal();
-  alert('Verstuurd! De ander ziet dit morgen. 💛');
+  alert('Verstuurd! De ander ziet dit morgen. \u{1F49B}');
 }
 
 function showModal(innerHtml) {
