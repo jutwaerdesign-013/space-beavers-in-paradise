@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test</title>
+</head>
+<body style="font-family:sans-serif; padding:20px; font-size:1.3rem;">
+<div id="status">STAP 1: Pagina geladen, JS start...</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  document.getElementById('status').innerText = 'STAP 2: CDN-script geladen. Supabase library aanwezig: ' + (typeof window.supabase !== 'undefined');
+  try {
+    var client = window.supabase.createClient('https://kbefgjtgwxjifporbtpz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiZWZnanRnd3hqaWZwb3JidHB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjQwMjcsImV4cCI6MjEwNTE0MDAyN30.Y21u-9QJtzFyW_a_xQAF2rgwdeUMRkPQJQI4o6ijohc');
+    document.getElementById('status').innerText = 'STAP 3: Supabase-client aangemaakt. Test query...';
+    client.from('entries').select('*').limit(1).then(function(res) {
+      document.getElementById('status').innerText = 'STAP 4 GELUKT! Query resultaat: ' + JSON.stringify(res.data) + ' (error: ' + JSON.stringify(res.error) + ')';
+    }).catch(function(err) {
+      document.getElementById('status').innerText = 'FOUT bij query: ' + err.message;
+    });
+  } catch (e) {
+    document.getElementById('status').innerText = 'FOUT: ' + e.message;
+  }
+</script>
+</body>
+</html>
